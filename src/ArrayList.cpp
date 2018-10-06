@@ -45,67 +45,71 @@ template <typename T> ArrayList<T>& ArrayList<T>::operator=(const ArrayList<T>& 
     return *this;
 }
 
-template <typename T> const uint32_t& ArrayList<T>::add(const T& value)
-{
-    if (mCapacity == 0) {
-        mCapacity = 1;
-        mArray.reset(new T[1]);
-    }
-    mSize++;
-    if (mSize > mCapacity) {
-        mCapacity *= 2;
-        ScopedArray<T> temp(new T[mCapacity]);
-        for (uint32_t i = 0; i < mCapacity; i++) {
-            if (i < mSize) {
-                temp[i] = mArray[i];
-            } else {
-                temp[i] = T();
-            }
+template <typename T> const uint32_t& ArrayList<T>::add(const T& value) {
+        if (mCapacity == 0) {
+            mCapacity = 1;
+            mArray.reset(new T[1]);
         }
-        mArray.swap(temp);
+        mSize++;
+        if (mSize > mCapacity) {
+            mCapacity *= 2;
+            ScopedArray<T> temp(new T[mCapacity]);
+            for (uint32_t i = 0; i < mCapacity; i++) {
+                if (i < mSize) {
+                    temp[i] = mArray[i];
+                }
+                else {
+                    temp[i] = T();
+                }
+            }
+            mArray.swap(temp);
+        }
+        mArray[mSize - 1] = value;
+        return mCapacity;
+//    if(mSize ==0) {
+//        return add(0,value);
+//    }
+//        return add(mSize, value);
     }
-    mArray[mSize - 1] = value;
-    return mCapacity;
-}
 
 template <typename T> const uint32_t& ArrayList<T>::add(const uint32_t& index, const T& value)
 {
-    // 4 cases cap = 0, size greater than cap, index greater than cap, normal function
     if (mCapacity == 0) {
-        mCapacity = 1;
+        mCapacity++;
+//        T* initmArray = new T[1];
         mArray.reset(new T[1]);
     }
     mSize++;
-
-    // index greater than cap
-    while (index > mCapacity || mSize > mCapacity) {
-        mCapacity *= 2;
-    }
-    if (index < mCapacity) {
-        ScopedArray<T> temp(new T[mCapacity]);
-        for (uint32_t i = 0; i < mCapacity; i++) {
-            if (i < index) {
-                temp[i] = mArray[i];
-            } else if (i == index) {
-                temp[i] = value;
-            } else if (i > index && i < mSize) {
-                temp[i] = mArray[i - 1];
-            } else {
-                temp[i] = T();
-            }
+//    if (index > mCapacity) {
+        while (index > mCapacity || mSize > mCapacity) {
+            mCapacity *= 2;
         }
-        mArray.swap(temp);
-    }
+        if(index < mCapacity && index <mSize) {
+            ScopedArray<T> temp(new T[mCapacity]);
+            for (uint32_t i = 0; i < mSize; i++) {
+                if (i < index) {
+                    temp[i] = mArray[i];
+                } else if (i == index) {
+//                    temp[i] = value;
+                } else if (i > index) {
+                    temp[i] = mArray[i - 1];
+                } else {
+                    temp[i] = T();
+        }
+            }
+            mArray.swap(temp);
+        }
+        mArray[index] = value;
     return mCapacity;
 }
 
 template <typename T> void ArrayList<T>::clear()
 {
-    for (uint32_t i = mSize; i > 0; i--) {
-        mArray[i] = T();
+    for (uint32_t i = mSize; i > 0; --i) {
+        mArray[i-1] = T();
         mSize--;
     }
-    mArray.reset(nullptr);
+    mArray.reset();
 }
 
 template <typename T> const T& ArrayList<T>::get(const uint32_t& index) const

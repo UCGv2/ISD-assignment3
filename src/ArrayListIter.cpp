@@ -15,7 +15,7 @@ template <typename T> bool ArrayListIterator<T>::operator!=(const ArrayListItera
 template <typename T> // const cast stuff?
 T& ArrayListIterator<T>::operator*()
 {
-    return *mPtr;
+    return const_cast<T&>(static_cast<const ArrayListIterator<T>*>(this)->operator*());
 }
 template <typename T> const T& ArrayListIterator<T>::operator*() const
 {
@@ -28,7 +28,7 @@ ArrayListIterator<T>::ArrayListIterator(T* ptr)
 }
 template <typename T> T* ArrayListIterator<T>::operator->()
 {
-    return mPtr;
+    return const_cast<T*>(static_cast<const ArrayListIterator<T>*>(this)->operator->());
 }
 
 template <typename T> const T* ArrayListIterator<T>::operator->() const
@@ -95,7 +95,7 @@ template <typename X> ArrayListIterator<X> operator+(int offset, const ArrayList
 
 template <typename T> T& ArrayListIterator<T>::operator[](const int& index)
 {
-    return mPtr[index];
+    return const_cast<T&>(static_cast<const ArrayListIterator<T>*>(this)->operator[](index));
 }
 template <typename T> const T& ArrayListIterator<T>::operator[](int index) const
 {
