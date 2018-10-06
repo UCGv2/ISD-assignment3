@@ -2,7 +2,6 @@
 // Created by fours on 9/21/2018.
 //
 
-#include "ArrayListIter.h"
 template <typename T> bool ArrayListIterator<T>::operator==(const ArrayListIterator<T>& rhs) const
 {
     return mPtr == rhs.mPtr;
@@ -12,8 +11,7 @@ template <typename T> bool ArrayListIterator<T>::operator!=(const ArrayListItera
 {
     return mPtr != rhs.mPtr;
 }
-template <typename T> // const cast stuff?
-T& ArrayListIterator<T>::operator*()
+template <typename T> T& ArrayListIterator<T>::operator*()
 {
     return const_cast<T&>(static_cast<const ArrayListIterator<T>*>(this)->operator*());
 }
