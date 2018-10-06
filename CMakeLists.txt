@@ -15,6 +15,7 @@ find_package(Threads)
 ExternalProject_Add(googletest
     DOWNLOAD_NO_PROGRESS 1
     UPDATE_DISCONNECTED 1
+    GIT_TAG release-1.8.1
     GIT_REPOSITORY https://github.com/google/googletest
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GTEST_DIRECTORY}
 )
