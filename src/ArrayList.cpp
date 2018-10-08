@@ -4,11 +4,8 @@
  *  Honor code: I have neither given nor received unauthorized aid on this assignment.
  *  file: ArrayList.cpp
  */
-
-#include <memory>
 #include <stdexcept>
 
-// safe bc no memory alloc and only primitive types
 /**
  * Creates an ArrayList of size 0.
  */
@@ -26,15 +23,19 @@ ArrayList<T>::ArrayList()
  * @param size size of the ArrayList to create
  * @param value value used to fill the ArrayList
  */
-// make ctors safe perhaps with smart ptrs
 template <typename T>
 ArrayList<T>::ArrayList(const uint32_t& size, const T& value)
     : mArray(new T[size])
     , mSize(size)
     , mCapacity(size)
 {
-    for (size_t i = 0; i < size; ++i) {
-        mArray[i] = value;
+    try {
+        for (size_t i = 0; i < size; ++i) {
+            mArray[i] = value;
+        }
+    } catch (const std::exception& except) {
+        mArray.reset();
+        throw except;
     }
 }
 
@@ -42,15 +43,19 @@ ArrayList<T>::ArrayList(const uint32_t& size, const T& value)
  * Creates a deep copy of the provided ArrayList
  * @param src ArrayList to copy
  */
-// make mArray safe by handling its new operation
 template <typename T>
 ArrayList<T>::ArrayList(const ArrayList<T>& src)
-    : mArray(new T[src.mSize])
+    : mArray(new T[src.mCapacity])
     , mSize(src.mSize)
     , mCapacity(src.mCapacity)
 {
-    for (size_t i = 0; i < src.mSize; ++i) {
-        mArray[i] = src.mArray[i];
+    try {
+        for (size_t i = 0; i < src.mCapacity; ++i) {
+            mArray[i] = src.mArray[i];
+        }
+    } catch (const std::exception& except) {
+        mArray.reset();
+        throw except;
     }
 }
 
@@ -59,14 +64,17 @@ ArrayList<T>::ArrayList(const ArrayList<T>& src)
  * @param src ArrayList to copy
  * @return *this for chaining
  */
-
-// this is probably not exception safe
 template <typename T> ArrayList<T>& ArrayList<T>::operator=(const ArrayList<T>& src)
 {
-    ArrayList<T> copy(src);
-    mArray.swap(copy.mArray);
-    mSize = copy.mSize;
-    mCapacity = copy.mCapacity;
+    try {
+        ArrayList<T> copy(src);
+        mArray.swap(copy.mArray);
+        mSize = copy.mSize;
+        mCapacity = copy.mCapacity;
+    } catch (const std::exception& except) {
+        throw except;
+    }
+
     return *this;
 }
 
@@ -95,7 +103,6 @@ template <typename T> const uint32_t& ArrayList<T>::add(const T& value)
  * @param value the element to insert
  * @return total array capacity
  */
-// make new operations safe, edit to work for the other design
 template <typename T> const uint32_t& ArrayList<T>::add(const uint32_t& index, const T& value)
 {
     uint32_t capCopy = mCapacity;
@@ -129,7 +136,6 @@ template <typename T> const uint32_t& ArrayList<T>::add(const uint32_t& index, c
 /**
  * Clears this ArrayList, leaving it empty.
  */
-// only unsafe if mArray is not initialized
 template <typename T> void ArrayList<T>::clear()
 {
     mArray.reset();
@@ -144,7 +150,6 @@ template <typename T> void ArrayList<T>::clear()
  * @param index the desired location
  * @return a const T & to the desired element.
  */
-// doesn't alter anything just returns a value
 template <typename T> const T& ArrayList<T>::get(const uint32_t& index) const
 {
     if (index > mSize) {
@@ -193,7 +198,6 @@ template <typename T> const T& ArrayList<T>::operator[](const uint32_t& index) c
  * Empty check.
  * @return True if this ArrayList is empty and false otherwise.
  */
-// no except
 template <typename T> bool ArrayList<T>::isEmpty() const
 {
     return !mArray && mSize == 0 && mCapacity == 0;
@@ -255,14 +259,23 @@ template <typename T> T ArrayList<T>::remove(const uint32_t& index)
     }
 
     T takeOut = mArray[index];
-    mSize--;
-    for (uint32_t i = index; i < mSize; i++) {
-        mArray[i] = mArray[i + 1];
+    uint32_t downSize = mSize - 1;
+    ScopedArray<T> temp(new T[mCapacity]);
+    for (uint32_t i = 0; i < mCapacity; ++i) {
+        if (i < index) {
+            temp[i] = mArray[i];
+        } else if (i >= index && i < mSize) {
+            temp[i] = mArray[i + 1];
+        } else {
+            temp[i] = T();
+        }
     }
-    if (mSize == 0) {
+    mArray.swap(temp);
+    if (downSize == 0) {
         mArray.reset();
         mCapacity = 0;
     }
+    mSize = downSize;
     return takeOut;
 }
 
@@ -278,14 +291,21 @@ template <typename T> void ArrayList<T>::set(const uint32_t& index, const T& val
     if (index > mSize || mSize == 0) {
         throw std::out_of_range(std::to_string(index));
     }
-    mArray[index] = value;
+    ScopedArray<T> temp(new T[mCapacity]);
+    for (uint32_t i = 0; i < mCapacity; ++i) {
+        if (index == i) {
+            temp[index] = value;
+        } else {
+            temp[i] = mArray[i];
+        }
+    }
+    mArray.swap(temp);
 }
 
 /**
  * Returns the size of this ArrayList.
  * @return the size of this ArrayList.
  */
-// safe
 template <typename T> uint32_t ArrayList<T>::size() const
 {
     return mSize;
